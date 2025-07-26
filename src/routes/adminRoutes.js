@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { param, body } from 'express-validator';
 import { getAllUsers, deleteUser, upsertTicker, deleteTicker } from '../controllers/adminController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { adminMiddleware } from '../middleware/adminMiddleware.js';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { adminSchemas } from '../utils/validationSchemas.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ const router = Router();
  *       403:
  *         description: Forbidden
  */
-router.get('/api/admin/users', authMiddleware, adminMiddleware, getAllUsers);
+router.get('/users', authMiddleware, adminMiddleware, getAllUsers);
 
 /**
  * @swagger
@@ -49,7 +50,7 @@ router.get('/api/admin/users', authMiddleware, adminMiddleware, getAllUsers);
  *       404:
  *         description: User not found
  */
-router.delete('/api/admin/users/:id', [param('id').isString().notEmpty()], authMiddleware, adminMiddleware, deleteUser);
+router.delete('/users/:id', validationMiddleware(adminSchemas.deleteUser, 'params'), authMiddleware, adminMiddleware, deleteUser);
 
 /**
  * @swagger
@@ -85,13 +86,8 @@ router.delete('/api/admin/users/:id', [param('id').isString().notEmpty()], authM
  *         description: Forbidden
  */
 router.post(
-  '/api/admin/tickers',
-  [
-    body('id').isString().notEmpty(),
-    body('name').isString().notEmpty(),
-    body('symbol').isString().notEmpty(),
-    body('price').isNumeric(),
-  ],
+  '/tickers',
+  validationMiddleware(adminSchemas.upsertTicker, 'body'),
   authMiddleware,
   adminMiddleware,
   upsertTicker
@@ -122,7 +118,7 @@ router.post(
  *       404:
  *         description: Ticker not found
  */
-router.delete('/api/admin/tickers/:id', [param('id').isString().notEmpty()], authMiddleware, adminMiddleware, deleteTicker);
+router.delete('/tickers/:id', validationMiddleware(adminSchemas.deleteTicker, 'params'), authMiddleware, adminMiddleware, deleteTicker);
 
 export default router;
  

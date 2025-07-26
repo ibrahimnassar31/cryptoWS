@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { param, body } from 'express-validator';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { alertSchemas } from '../utils/validationSchemas.js';
 import { createAlert, getAlerts, deleteAlert } from '../controllers/alertController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
@@ -43,13 +44,9 @@ const router = Router();
  *         description: Unauthorized
  */
 router.post(
-  '/api/users/:id/alerts',
-  [
-    param('id').isString().notEmpty(),
-    body('tickerId').isString().notEmpty(),
-    body('targetPrice').isNumeric(),
-    body('direction').isIn(['above', 'below']),
-  ],
+  '/:id/alerts',
+  validationMiddleware(alertSchemas.createAlert, 'params'),
+  validationMiddleware(alertSchemas.createAlert, 'body'),
   authMiddleware,
   createAlert
 );
@@ -78,8 +75,8 @@ router.post(
  *         description: User not found
  */
 router.get(
-  '/api/users/:id/alerts',
-  [param('id').isString().notEmpty()],
+  '/:id/alerts',
+  validationMiddleware(alertSchemas.getAlerts, 'params'),
   authMiddleware,
   getAlerts
 );
@@ -114,8 +111,8 @@ router.get(
  *         description: Alert not found
  */
 router.delete(
-  '/api/users/:id/alerts/:alertId',
-  [param('id').isString().notEmpty(), param('alertId').isString().notEmpty()],
+  '/:id/alerts/:alertId',
+  validationMiddleware(alertSchemas.deleteAlert, 'params'),
   authMiddleware,
   deleteAlert
 );

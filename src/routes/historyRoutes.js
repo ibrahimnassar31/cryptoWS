@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { param, query } from 'express-validator';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { historySchemas } from '../utils/validationSchemas.js';
 import { getHistory } from '../controllers/historyController.js';
 
 const router = Router();
@@ -49,12 +50,9 @@ const router = Router();
  *         description: Ticker not found
  */
 router.get(
-  '/api/tickers/:id/history',
-  [
-    param('id').isString().notEmpty(),
-    query('interval').optional().isIn(['1d', '1h']),
-    query('limit').optional().isInt({ min: 1, max: 365 }),
-  ],
+  '/:id/history',
+  validationMiddleware(historySchemas.getHistory, 'params'),
+  validationMiddleware(historySchemas.getHistory, 'query'),
   getHistory
 );
 

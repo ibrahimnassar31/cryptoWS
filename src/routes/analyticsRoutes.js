@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { query } from 'express-validator';
 import { getTrending } from '../controllers/analyticsController.js';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { analyticsSchemas } from '../utils/validationSchemas.js';
 
 const router = Router();
 
@@ -35,11 +36,8 @@ const router = Router();
  *                 $ref: '#/components/schemas/Ticker'
  */
 router.get(
-  '/api/analytics/trending',
-  [
-    query('by').optional().isIn(['volume', 'priceChange', 'favorites']),
-    query('limit').optional().isInt({ min: 1, max: 100 }),
-  ],
+  '/trending',
+  validationMiddleware(analyticsSchemas.getTrending, 'query'),
   getTrending
 );
 

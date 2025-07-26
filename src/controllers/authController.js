@@ -1,7 +1,5 @@
-import { validationResult } from 'express-validator';
 import { ApiError } from '../middleware/errorMiddleware.js';
 import * as authService from '../services/authService.js';
-import { validate } from '../utils/validation.js';
 import logger from '../utils/logger.js';
 
 /**
@@ -10,9 +8,7 @@ import logger from '../utils/logger.js';
  */
 export const register = async (req, res, next) => {
   try {
-    // Validate request
-    const validationError = validate(req, res);
-    if (validationError) return;
+    
 
     const { email, password, username, avatar, bio } = req.body;
 
@@ -41,9 +37,7 @@ export const register = async (req, res, next) => {
  */
 export const login = async (req, res, next) => {
   try {
-    // Validate request
-    const validationError = validate(req, res);
-    if (validationError) return;
+    
 
     const { email, password } = req.body;
 
@@ -92,9 +86,7 @@ export const getCurrentUser = async (req, res, next) => {
  */
 export const updateProfile = async (req, res, next) => {
   try {
-    // Validate request
-    const validationError = validate(req, res);
-    if (validationError) return;
+    
 
     if (!req.user || !req.user.id) {
       throw new ApiError('Authentication required', 401);
@@ -126,9 +118,7 @@ export const updateProfile = async (req, res, next) => {
  */
 export const changePassword = async (req, res, next) => {
   try {
-    // Validate request
-    const validationError = validate(req, res);
-    if (validationError) return;
+    
 
     if (!req.user || !req.user.id) {
       throw new ApiError('Authentication required', 401);
@@ -160,9 +150,7 @@ export const changePassword = async (req, res, next) => {
  */
 export const forgotPassword = async (req, res, next) => {
   try {
-    // Validate request
-    const validationError = validate(req, res);
-    if (validationError) return;
+    
 
     const { email } = req.body;
 

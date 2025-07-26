@@ -1,4 +1,3 @@
-import { validationResult } from 'express-validator';
 import * as tickerService from '../services/tickerService.js';
 import { ApiError } from '../middleware/errorMiddleware.js';
 import { validate } from '../utils/validation.js';

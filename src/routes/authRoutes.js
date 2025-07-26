@@ -8,9 +8,9 @@ import {
   forgotPassword, 
   resetPassword 
 } from '../controllers/authController.js';
-import { authValidation } from '../utils/validation.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
-import { body } from 'express-validator';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { authSchemas } from '../utils/validationSchemas.js';
 
 const router = Router();
 
@@ -54,7 +54,7 @@ const router = Router();
  */
 router.post(
   '/register', 
-  authValidation.register,
+  validationMiddleware(authSchemas.register, 'body'),
   register
 );
 
@@ -88,7 +88,7 @@ router.post(
  */
 router.post(
   '/login', 
-  authValidation.login,
+  validationMiddleware(authSchemas.login, 'body'),
   login
 );
 
@@ -145,9 +145,7 @@ router.patch(
   '/me',
   [
     authMiddleware,
-    body('username').optional().isString().trim().isLength({ min: 3, max: 30 }),
-    body('avatar').optional().isURL(),
-    body('bio').optional().isString().trim().isLength({ max: 300 })
+    validationMiddleware(authSchemas.updateProfile, 'body'),
   ],
   updateProfile
 );
@@ -188,8 +186,7 @@ router.post(
   '/change-password',
   [
     authMiddleware,
-    body('currentPassword').notEmpty().withMessage('Current password is required'),
-    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+    validationMiddleware(authSchemas.changePassword, 'body'),
   ],
   changePassword
 );
@@ -221,7 +218,7 @@ router.post(
 router.post(
   '/forgot-password',
   [
-    body('email').isEmail().withMessage('Valid email required')
+    validationMiddleware(authSchemas.forgotPassword, 'body'),
   ],
   forgotPassword
 );
@@ -256,8 +253,7 @@ router.post(
 router.post(
   '/reset-password',
   [
-    body('token').notEmpty().withMessage('Token is required'),
-    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+    validationMiddleware(authSchemas.resetPassword, 'body'),
   ],
   resetPassword
 );

@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { getFavorites, addFavorite, removeFavorite } from '../controllers/favoriteController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
-import { param, body } from 'express-validator';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { favoriteSchemas } from '../utils/validationSchemas.js';
 
 /**
  * Favorites routes
@@ -10,10 +11,7 @@ import { param, body } from 'express-validator';
 const router = Router();
 
 // Validation schemas
-const favoriteValidation = {
-  userId: param('userId').isMongoId().withMessage('Valid user ID is required'),
-  tickerId: body('tickerId').isString().trim().notEmpty().withMessage('Valid ticker ID is required')
-};
+
 
 /**
  * GET /api/favorites/:userId
@@ -22,7 +20,7 @@ const favoriteValidation = {
  */
 router.get(
   '/:userId',
-  [favoriteValidation.userId],
+  validationMiddleware(favoriteSchemas.getFavorites, 'params'),
   authMiddleware,
   getFavorites
 );
@@ -34,10 +32,8 @@ router.get(
  */
 router.post(
   '/:userId',
-  [
-    favoriteValidation.userId,
-    favoriteValidation.tickerId
-  ],
+  validationMiddleware(favoriteSchemas.addFavorite, 'params'),
+  validationMiddleware(favoriteSchemas.addFavorite, 'body'),
   authMiddleware,
   addFavorite
 );
@@ -49,10 +45,8 @@ router.post(
  */
 router.delete(
   '/:userId',
-  [
-    favoriteValidation.userId,
-    favoriteValidation.tickerId
-  ],
+  validationMiddleware(favoriteSchemas.removeFavorite, 'params'),
+  validationMiddleware(favoriteSchemas.removeFavorite, 'body'),
   authMiddleware,
   removeFavorite
 );

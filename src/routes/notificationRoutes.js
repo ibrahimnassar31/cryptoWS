@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { param, body } from 'express-validator';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { notificationSchemas } from '../utils/validationSchemas.js';
 import { getNotifications, createNotification, markNotificationRead } from '../controllers/notificationController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { adminMiddleware } from '../middleware/adminMiddleware.js';
@@ -30,8 +31,8 @@ const router = Router();
  *         description: User not found
  */
 router.get(
-  '/api/users/:id/notifications',
-  [param('id').isString().notEmpty()],
+  '/:id/notifications',
+  validationMiddleware(notificationSchemas.getNotifications, 'params'),
   authMiddleware,
   getNotifications
 );
@@ -73,8 +74,9 @@ router.get(
  *         description: Forbidden
  */
 router.post(
-  '/api/users/:id/notifications',
-  [param('id').isString().notEmpty(), body('type').isString(), body('message').isString().notEmpty()],
+  '/:id/notifications',
+  validationMiddleware(notificationSchemas.createNotification, 'params'),
+  validationMiddleware(notificationSchemas.createNotification, 'body'),
   authMiddleware,
   adminMiddleware,
   createNotification
@@ -110,8 +112,8 @@ router.post(
  *         description: Notification not found
  */
 router.put(
-  '/api/users/:id/notifications/:notifId/read',
-  [param('id').isString().notEmpty(), param('notifId').isString().notEmpty()],
+  '/:id/notifications/:notifId/read',
+  validationMiddleware(notificationSchemas.markNotificationRead, 'params'),
   authMiddleware,
   markNotificationRead
 );

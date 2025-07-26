@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getTickers, getTickerById } from '../controllers/tickerController.js';
-import { tickerValidation } from '../utils/validation.js';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { tickerSchemas } from '../utils/validationSchemas.js';
 import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
 import { CACHE_TTL } from '../constants/index.js';
 
@@ -66,7 +67,7 @@ const router = Router();
  */
 router.get(
   '/',
-  tickerValidation.getAll,
+  validationMiddleware(tickerSchemas.getAll, 'query'),
   cacheMiddleware(CACHE_TTL),
   getTickers
 );
@@ -96,7 +97,7 @@ router.get(
  */
 router.get(
   '/:id',
-  tickerValidation.getById,
+  validationMiddleware(tickerSchemas.getById, 'params'),
   cacheMiddleware(CACHE_TTL),
   getTickerById
 );

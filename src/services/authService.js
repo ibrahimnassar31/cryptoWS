@@ -195,6 +195,18 @@ export const updateUserProfile = async (userId, updateData) => {
       throw new ApiError(`Validation error: ${error.message}`, 400);
     }
 
+    // Handle duplicate key error for unique fields (e.g., username)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      throw new ApiError(`The ${field} '${error.keyValue[field]}' is already taken`, 409);
+    }
+
+    // Handle invalid ID format
+    if (error.name === 'CastError') {
+      logger.warn('Invalid user ID format for update', { userId });
+      throw new ApiError('Invalid user ID format', 400);
+    }
+
     // Re-throw ApiErrors
     if (error.name === 'ApiError') {
       throw error;
@@ -221,7 +233,8 @@ export const changePassword = async (userId, currentPassword, newPassword) => {
     }
 
     // Verify current password
-    const isMatch = await user.comparePassword(currentPassword);
+    logger.debug(`Comparing password: candidate='${currentPassword.trim()}', stored='${user.password}'`);
+    const isMatch = await user.comparePassword(currentPassword.trim());
     if (!isMatch) {
       logger.warn('Password change with incorrect current password', { userId });
       throw new ApiError('Current password is incorrect', 401);

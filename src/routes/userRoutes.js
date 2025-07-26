@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { param, body } from 'express-validator';
 import { getProfile, updateProfile } from '../controllers/userController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import validationMiddleware from '../middleware/validationMiddleware.js';
+import { userSchemas } from '../utils/validationSchemas.js';
 
 const router = Router();
 
@@ -25,8 +26,8 @@ const router = Router();
  *         description: User not found
  */
 router.get(
-  '/api/users/:id/profile',
-  [param('id').isString().notEmpty()],
+  '/:id/profile',
+  validationMiddleware(userSchemas.getProfile, 'params'),
   getProfile
 );
 
@@ -72,13 +73,9 @@ router.get(
  *         description: User not found
  */
 router.put(
-  '/api/users/:id/profile',
-  [
-    param('id').isString().notEmpty(),
-    body('username').optional().isString().trim().isLength({ min: 2, max: 30 }),
-    body('avatar').optional().isURL(),
-    body('bio').optional().isString().isLength({ max: 300 }),
-  ],
+  '/:id/profile',
+  validationMiddleware(userSchemas.updateProfile, 'params'),
+  validationMiddleware(userSchemas.updateProfile, 'body'),
   authMiddleware,
   updateProfile
 );

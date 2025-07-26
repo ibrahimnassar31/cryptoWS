@@ -1,28 +1,40 @@
-import CryptoTicker from '../models/CryptoTicker.js';
-import { fetchCryptoTickers } from '../services/coinpaprikaService.js';
+import { validationResult } from 'express-validator';
+import * as tickerService from '../services/tickerService.js';
+import { ApiError } from '../middleware/errorMiddleware.js';
+import { validate } from '../utils/validation.js';
 
-// Fetch and update tickers from CoinPaprika, then return from DB
-export const getTickers = async (req, res) => {
+/**
+ * Get paginated, filtered, sorted list of tickers
+ * @route GET /api/tickers
+ */
+export const getTickers = async (req, res, next) => {
   try {
-    // Fetch latest data from CoinPaprika
-    const tickers = await fetchCryptoTickers();
-    if (tickers.length) {
-      // Upsert each ticker in DB
-      await Promise.all(
-        tickers.map(async (ticker) => {
-          await CryptoTicker.findOneAndUpdate(
-            { id: ticker.id },
-            { $set: ticker },
-            { upsert: true, new: true }
-          );
-        })
-      );
-    }
-    // Return all tickers from DB
-    const dbTickers = await CryptoTicker.find({}).sort({ rank: 1 });
-    return res.status(200).json(dbTickers);
+    const validationError = validate(req, res);
+    if (validationError) return;
+
+    const response = await tickerService.getTickers(req.query);
+    return res.status(200).json(response);
   } catch (error) {
-    console.error('Error in getTickers:', error);
-    return res.status(500).json({ error: 'Failed to fetch tickers' });
+    next(error);
   }
 };
+
+/**
+ * Get a single ticker by ID
+ * @route GET /api/tickers/:id
+ */
+export const getTickerById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const ticker = await tickerService.getTickerById(id);
+    if (!ticker) {
+      throw new ApiError(`Ticker with id '${id}' not found`, 404);
+    }
+
+    return res.status(200).json(ticker);
+  } catch (error) {
+    next(error);
+  }
+};
+

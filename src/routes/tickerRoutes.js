@@ -1,19 +1,42 @@
 import { Router } from 'express';
-import { getTickers } from '../controllers/tickerController.js';
-import { query } from 'express-validator';
+import { getTickers, getTickerById } from '../controllers/tickerController.js';
+import { tickerValidation } from '../utils/validation.js';
+import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
+import { CACHE_TTL } from '../constants/index.js';
 
+/**
+ * Ticker routes
+ * @module routes/tickerRoutes
+ */
 const router = Router();
 
-// GET /api/tickers with validation for pagination, filtering, sorting
+/**
+ * GET /api/tickers
+ * Get paginated, filtered, sorted list of cryptocurrency tickers
+ */
 router.get(
   '/',
-  [
-    query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
-    query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be 1-100'),
-    query('sort').optional().isIn(['price', 'market_cap', 'rank']).withMessage('Invalid sort field'),
-    query('symbol').optional().isString().trim().isLength({ min: 1, max: 10 }),
-  ],
+  tickerValidation.getAll,
+  cacheMiddleware(CACHE_TTL),
   getTickers
 );
+
+/**
+ * GET /api/tickers/:id
+ * Get a single cryptocurrency ticker by ID
+ */
+router.get(
+  '/:id',
+  tickerValidation.getById,
+  cacheMiddleware(CACHE_TTL),
+  getTickerById
+);
+
+/**
+ * Future routes for ticker management can be added here:
+ * - PUT /api/tickers/:id (update a ticker)
+ * - POST /api/tickers (create a new ticker - admin only)
+ * - DELETE /api/tickers/:id (delete a ticker - admin only)
+ */
 
 export default router;

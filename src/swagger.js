@@ -119,5 +119,5 @@ export default {
       },
     },
   },
-  apis: [],
+  apis: ['./src/routes/*.js'],
 }; 
